@@ -1,0 +1,28 @@
+module dec2to4(
+    A, en,
+    B
+);
+input   [1:0]   A;
+input           en;
+output  [3:0]   B;
+
+assign B[0] = en & (!A[0] & !A[1]);  // true when A = 2'b00
+assign B[1] = en & (A[0] & !A[1]);   // true when A = 2'b01
+assign B[2] = en & (!A[0] & A[1]);   // true when A = 2'b10
+assign B[3] = en & (A[0] & A[1]);  // true when A = 2'b11
+
+endmodule
+
+module dec3to8(
+    inp,
+    out
+);
+input   [2:0]   inp;
+output  [7:0]   out;
+
+dec2to4 dec1(.A({inp[1], inp[0]}), .en(!inp[2]), .B(out[3:0]));
+// ~inp[2]를 enable로 사용해 out의 하위 4-bits를 결정
+
+dec2to4 dec2(.A({inp[1], inp[0]}), .en(inp[2]), .B(out[7:4]));
+// inp[2]를 enable로 사용해 out의 상위 4-bits를 결정
+endmodule

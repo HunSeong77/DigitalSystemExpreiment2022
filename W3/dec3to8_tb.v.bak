@@ -1,0 +1,15 @@
+`timescale 10ns/1ps
+
+module dec3to8_tb();
+
+reg  [2:0]  _inp;
+wire [7:0]  _out;
+
+dec3to8 myDec(.inp(_inp), .out(_out));
+
+initial begin
+    for(_inp = 3'b000; _inp < 3'b111; _inp = _inp + 3'b001) #10;
+    #10;
+end
+
+endmodule
