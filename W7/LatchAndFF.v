@@ -26,6 +26,6 @@ wire D;
 
 assign D = ((~K) & Q) | (J & Q_);
 
-D_FF D1(.D(D), .clk(clk), .Q(Q), .Q_(Q_));
+D_FF D1(.D(D), .clk(~clk), .Q(Q), .Q_(Q_));
 
 endmodule
