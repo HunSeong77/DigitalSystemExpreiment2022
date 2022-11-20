@@ -8,13 +8,13 @@ reg [3:0] PC;
 
 initial begin
     // implement your code here
-
-    // to here
+    PC <= 4'b0101;
 end
 
 always@(posedge CLK) begin
     if(~PL)
         // implement your code here
+        PC <= PC + 4'b0001;
     else if (JB)
         PC <= AData;
     else if (BC) begin
@@ -22,12 +22,14 @@ always@(posedge CLK) begin
             PC <= PC + {LAdderss[1:0], RAdderss[1:0]};
         else
             // implement your code here
+            PC <= PC + 4'b0001;
     end
     else if (~BC) begin
         if(AData == 4'b0000)
             PC <= PC + {LAddress[1:0], RAdderss[1:0]}
         else
             // implement your code here
+            PC <= PC + 4'b0001;
     end
 end
 endmodule
