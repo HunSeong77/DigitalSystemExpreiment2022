@@ -34,11 +34,11 @@ module counter(CLK, Q);
 		end
 endmodule
 
-module LED(CLK, I, O);
-	input CLK, I;
+module LED(CLK, en, O);
+	input CLK, en;
 	output [7:0] O;
 	wire [3:0] cnt;
-	counter c(CLK & I, cnt);
+	counter c(CLK & en, cnt);
 	
 	assign O[0] = O[1] & !(!cnt[3] & cnt[2] & cnt[1] & !cnt[0]) & !(cnt[3] & !cnt[2] & !cnt[1] & cnt[0]); // 6, 9
 	assign O[1] = O[2] & !(!cnt[3] & cnt[2] & !cnt[1] & cnt[0]) & !(cnt[3] & !cnt[2] & cnt[1] & !cnt[0]); // 5, 10
@@ -50,3 +50,29 @@ module LED(CLK, I, O);
 	assign O[7] = 1; // 0, 15 0000, 1111
 endmodule
 	
+
+module clk_devider(clk, nrst, clk2, clk4, clk8, clk16, clk32, clk64);
+	input clk, nrst;
+	output clk2, clk4, clk8, clk16, clk32, clk64;
+	reg [5:0] Q;
+
+	initial begin
+		Q <= 6'b0;
+	end
+
+	always @(posedge clk or negedge nrst) begin
+		if(!nrst) begin
+			Q <= 6'b0;
+		end
+		else begin
+			Q <= Q + 1;
+		end
+	end
+
+	assign clk2 = Q[0];
+	assign clk4 = Q[1];
+	assign clk8 = Q[2];
+	assign clk16 = Q[3];
+	assign clk32 = Q[4];
+	assign clk64 = Q[5];
+endmodule
