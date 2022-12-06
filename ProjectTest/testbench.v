@@ -5,8 +5,9 @@ module tb();
     reg key_4, key_5, key_6;
     wire [7:0] oS_COM, oS_ENS;
     wire [7:0] o_LED;
+    wire hit;
 
-    TOP top(clk ,nrst, key_4, key_5, key_6, oS_COM, oS_ENS, o_LED);
+    TOP top(clk ,nrst, key_4, key_5, key_6, oS_COM, oS_ENS, o_LED, hit);
 
     always #5 clk = ~clk;
 
@@ -22,19 +23,24 @@ module tb();
 
         #10 nrst<= 1'b0;
 
-        #300 key_5 <= 1'b1;
-        #100 key_5 <= 1'b0;
+        // #300 key_6 <= 1'b1;
+        // #100 key_6 <= 1'b0;
+
+        #2500
 
         #300 key_5 <= 1'b1;
         #100 key_5 <= 1'b0;
+
+        // #300 key_5 <= 1'b1;
+        // #100 key_5 <= 1'b0;
         
-        #300 key_5 <= 1'b1;
-        #100 key_5 <= 1'b0;
+        // #300 key_5 <= 1'b1;
+        // #100 key_5 <= 1'b0;
 
-        #300 key_5 <= 1'b1;
-        #100 key_5 <= 1'b0;
+        // #300 key_5 <= 1'b1;
+        // #100 key_5 <= 1'b0;
 
-        #100
+        #1000000
         $stop;
     end
 endmodule

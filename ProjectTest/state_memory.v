@@ -1,31 +1,22 @@
-module SR_FF(CLK, S, R, Q, Q_);
-	input CLK, S, R;
-	output Q, Q_;
-	
-	wire t1, t2;
-	
-	assign t1 = CLK & S;
-	assign t2 = CLK & R;
-	
-	nor(Q, t1, Q_);
-	nor(Q_, t2, Q);
-endmodule
 
-module state_memory(clk, nrst, button, fire,
+module Tank_State_Memory(clk, nrst, button, fire, hit,
     tank1_location, tank2_location, tank1_life, tank2_life, turn);
   input clk, nrst;
   input [1:0] button;
   input fire;
+  input hit;
   output reg [3:0] tank1_location, tank2_location;
   output reg [1:0] tank1_life, tank2_life;
   output reg turn;
+  reg en_fire;
 
   initial begin
     tank1_location <= 4'b0100;
     tank2_location <= 4'b0010;
     tank1_life <= 2'b11;
     tank2_life <= 2'b11;
-    turn <= 1'b0;
+    turn <= 1'b1;
+    en_fire <= 1'b0;
   end
 
   always @(posedge clk or negedge nrst) begin
@@ -34,9 +25,18 @@ module state_memory(clk, nrst, button, fire,
         tank2_location <= 4'b0010;
         tank1_life <= 2'b11;
         tank2_life <= 2'b11;
-        turn <= 1'b0;
+        turn <= 1'b1;
+        en_fire <= 1'b0;
     end
-    else begin
+    else if(!fire) begin
+
+        if(!en_fire) begin
+            if(hit && turn) tank1_life = tank1_life - 1;
+            else if (hit && !turn) tank2_life = tank2_life - 1;
+            turn <= !turn;
+            en_fire <= 1'b1;
+        end
+
         if(turn == 1'b0) begin
             if(button[1] && !tank1_location[3]) begin
                 tank1_location <= tank1_location << 1;
@@ -54,15 +54,15 @@ module state_memory(clk, nrst, button, fire,
             end
         end
     end
-  end
-
-  always@(negedge fire) begin
-    turn <= ~turn;
+    else begin
+        en_fire <= 1'b0;
+    end
   end
 endmodule
+	
 
 
-module tank_controller(
+module Tank_Controller(
     tank1_location, tank2_location,
     tank1_life, tank2_life,
     SEG0, SEG1, SEG2, SEG3, SEG4, SEG5, SEG6, SEG7);
@@ -70,14 +70,14 @@ module tank_controller(
     input [1:0] tank1_life, tank2_life;
     output [7:0] SEG0, SEG1,SEG2,SEG3,SEG4,SEG5,SEG6,SEG7;
   
-    assign SEG7 = {tank1_location[3] | tank1_location[2] ,tank1_life[0] | tank1_life[1], 1'b0, tank1_location[3], tank1_location[3], tank1_location[3], 1'b0, tank1_location[3]};
-    assign SEG6 = {tank1_location[2] | tank1_location[1] , tank1_life[1], 1'b0, tank1_location[2], tank1_location[2], tank1_location[2], 1'b0, tank1_location[2]};
-    assign SEG5 = {tank1_location[1] ,tank1_life[0] & tank1_life[1], 1'b0, tank1_location[1], tank1_location[1], tank1_location[1], 1'b0, tank1_location[1]};
+    assign SEG7 = {tank1_life[0] | tank1_life[1], 1'b0, tank1_location[3], tank1_location[3], tank1_location[3], 1'b0, tank1_location[3], tank1_location[3] | tank1_location[2] };
+    assign SEG6 = {tank1_life[1], 1'b0, tank1_location[2], tank1_location[2], tank1_location[2], 1'b0, tank1_location[2], tank1_location[2] | tank1_location[1] };
+    assign SEG5 = {tank1_life[0] & tank1_life[1], 1'b0, tank1_location[1], tank1_location[1], tank1_location[1], 1'b0, tank1_location[1], tank1_location[1] };
     assign SEG4 = 8'b00000000;
-    assign SEG3 = {tank2_location[2] ,7'b0000000};
-    assign SEG2 = {tank2_location[2] | tank2_location[1] ,tank2_life[0] & tank2_life[1], 1'b0, tank2_location[2], tank2_location[2], tank2_location[2], 1'b0, tank2_location[2]};
-    assign SEG1 = {tank2_location[1] | tank2_location[0] , tank2_life[1], 1'b0, tank2_location[1], tank2_location[1], tank2_location[1], 1'b0, tank2_location[1]};
-    assign SEG0 = {tank2_location[0] , tank2_life[0] | tank2_life[1], 1'b0, tank2_location[0], tank2_location[0], tank2_location[0], 1'b0, tank2_location[0]};
+    assign SEG3 = {7'b0000000, tank2_location[2] };
+    assign SEG2 = {tank2_life[0] & tank2_life[1], 1'b0, tank2_location[2], tank2_location[2], tank2_location[2], 1'b0, tank2_location[2], tank2_location[2] | tank2_location[1]};
+    assign SEG1 = {tank2_life[1], 1'b0, tank2_location[1], tank2_location[1], tank2_location[1], 1'b0, tank2_location[1], tank2_location[1] | tank2_location[0] };
+    assign SEG0 = {tank2_life[0] | tank2_life[1], 1'b0, tank2_location[0], tank2_location[0], tank2_location[0], 1'b0, tank2_location[0], tank2_location[0]};
 endmodule
 
 module SevenSeg_CTRL(
@@ -178,19 +178,3 @@ module SevenSeg_CTRL(
     end
 
 endmodule
-
-module TEST(clk, nrst, button, oS_COM, oS_OUT);
-  input clk, nrst;
-  input[1:0] button;
-  output [7:0] oS_COM, oS_OUT;
-  
-  wire [7:0] tank_state;
-  wire [7:0] SEG0, SEG1, SEG2, SEG3, SEG4, SEG5, SEG6, SEG7;
-  state_memory smmr(clk, nrst, button, tank_state);
-  tank_controller tctrl(tank_state, SEG0, SEG1, SEG2, SEG3, SEG4, SEG5, SEG6, SEG7);
-  SevenSeg_CTRL ssc(clk, rst, SEG7, SEG6, SEG5, SEG4, SEG3, SEG2, SEG1, SEG0, oS_COM, oS_OUT);
-endmodule
-  
-  
-  
-  

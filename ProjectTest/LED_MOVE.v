@@ -11,17 +11,6 @@ module SR_FF(CLK, S, R, Q, Q_);
 	nor(Q_, t2, Q);
 endmodule
 
-module test(CLK, I, O);
-	input CLK;
-	input [1:0] I;
-	output [7:0] O;
-	
-	wire sr;
-	
-	SR_FF SR1(CLK, I[0], I[1] , sr);
-	LED led(CLK, sr, O);
-endmodule
-
 module counter(CLK, Q);
 	input CLK;
 	output [2:0] Q;
@@ -75,4 +64,5 @@ module clk_devider(clk, nrst, clk2, clk4, clk8, clk16, clk32, clk64);
 	assign clk16 = Q[3];
 	assign clk32 = Q[4];
 	assign clk64 = Q[5];
+	
 endmodule
