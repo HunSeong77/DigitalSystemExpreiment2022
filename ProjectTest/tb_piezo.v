@@ -2,36 +2,29 @@
 
 module tb_piezo();
     reg clk, nrst;
-    reg [1:0] tank1_life, tank2_life;
-    wire piezo_out;
+    reg key4, key5, key6;
+    wire piezo;
+    wire [7:0] LED, COM, ENS;
 
-    // hit_feedback piz(clk, nrst, tank1_life, tank2_life, piezo_out);
-
-    reg en;
-    congratulation cng(clk, nrst, en, piezo_out);
+    FORTRESS fortress(clk, nrst, key4, key5, key6, piezo, LED, COM, ENS);
 
     always #1 clk <= !clk;
 
     initial begin
-        // clk <= 1'b0;
-        // nrst <= 1'b1;
-        // tank1_life <= 2'b11;
-        // tank2_life <= 2'b11;
-        // #5 nrst <= 1'b0;
-        // #5 nrst <= 1'b1;
-        // #10 tank1_life <= 2'b10;
-
-        // #450000 $stop;
 
         clk <= 1'b0;
-        nrst <= 1'b1;
-        en <= 1'b0;
-        #5 nrst <= 1'b0;
+        nrst <= 1'b0;
+        key4 <= 1'b0; key5 <= 1'b0; key6 <= 1'b0;
+
         #5 nrst <= 1'b1;
+        #5 nrst <= 1'b0;
 
-        #10 en <= 1'b1;
+        #100000 key6 <= 1'b1;
+        #100000 key6 <= 1'b0;
 
-        #10000 en <= 1'b0;
-        #1000 en <= 1'b1;
+        #130000 key5 <= 1'b1;
+        #100000 key5 <= 1'b0;
+
+        
     end
 endmodule

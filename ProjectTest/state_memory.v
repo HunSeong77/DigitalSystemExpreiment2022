@@ -1,4 +1,3 @@
-
 module Tank_State_Memory(clk, nrst, button, fire, hit,
     tank1_location, tank2_location, tank1_life, tank2_life, turn);
   input clk, nrst;
@@ -29,11 +28,16 @@ module Tank_State_Memory(clk, nrst, button, fire, hit,
         en_fire <= 1'b0;
     end
     else if(!fire) begin
-
+			
         if(!en_fire) begin
-            if(hit && turn) tank1_life = tank1_life - 1;
-            else if (hit && !turn) tank2_life = tank2_life - 1;
-            turn <= !turn;
+				if(tank1_life != 2'b00 && tank2_life != 2'b00) begin
+					if(hit && turn) tank1_life = tank1_life - 1;
+					else if (hit && !turn) tank2_life = tank2_life - 1;
+				
+					if(tank1_life == 2'b00) tank1_location <= 4'b0000;
+					else if (tank2_life == 2'b00) tank2_location <= 4'b0000;
+					else turn <= !turn;
+				end
             en_fire <= 1'b1;
         end
 

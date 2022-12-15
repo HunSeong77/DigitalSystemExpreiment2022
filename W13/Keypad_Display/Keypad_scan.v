@@ -1,28 +1,35 @@
-module Keypad_scan(rst, clk, Keypad_in, valid, Scan_out);
-    input [11:0] Keypad_in;
-    input rst, clk;
+module keypad_scan(
+input rst, clk,
+input [11:0] keypad_in,
+output reg [11:0] scan_out = 0,
+output reg valid = 0);
 
-    output [11:0] Scan_out;
-    output valid;
+reg en;
 
-    reg [11:0] Scan_out;
+always @(posedge clk or negedge rst) begin
 
+if (~rst) begin		//active-low reset
+	en <= 0;
+	scan_out <= 0;
+	valid <= 0;
+end
+else begin
+	if (keypad_in && ~en) begin	//if keypad input occurred, generate output and valid signal
+		scan_out <= keypad_in;
+		valid <= 1'b1;
+		en <= 1'b1;
+	end
+	else if (keypad_in && en) begin	//after 1 clock passed, make valid signel to 0
+		valid <= 0;
+		scan_out <= 0;
+	end
+	else begin		//when keypad input disappear, return to initial condition
+		en <= 0;
+		valid <= 0;
+		scan_out <= 0;
+	end
+end
 
-    assign valid = Scan_out || 0; // if 
-
-    always@(Keypad_in) begin
-        Scan_out <= Keypad_in;
-    end
-
-    always@(posedge clk or negedge rst) begin
-        if(!rst) begin
-            Scan_out <= 12'b0;
-        end
-        else begin
-            if (Scan_out != 12'b0) begin
-                Scan_out <= 12'b0;
-            end
-        end
-    end
+end
 
 endmodule

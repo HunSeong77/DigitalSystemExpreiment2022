@@ -7,24 +7,24 @@ module JK_FF(ResetN, J, K, CLK, Q, Q_);
       Q = 1'b0;
       Q_ = 1'b1;
     end
-  else begin
-    if(J == 0) begin
-      if(K == 1) begin
-        Q = 1'b0;
-        Q_ = 1'b1;
+    else begin
+      if(J == 0) begin
+        if(K == 1) begin
+          Q = 1'b0;
+          Q_ = 1'b1;
+        end
       end
+      else begin
+        if(K == 0) begin
+          Q = 1'b1;
+          Q_ = 1'b0;
+        end
+        else begin
+          Q = !Q;
+          Q_ = !Q_;
+        end
     end
-  else begin
-    if(K == 0) begin
-      Q = 1'b1;
-      Q_ = 1'b0;
-    end
-  else begin
-    Q = !Q;
-    Q_ = !Q_;
   end
-end
-end
 endmodule
 
 module updown_counter(ResetN, DNUP, CLK, Q);

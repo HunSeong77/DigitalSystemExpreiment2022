@@ -1,4 +1,4 @@
-module TOP(clk, nrst, key_4, key_5, key_6,
+module TOP2(clk, nrst, key_4, key_5, key_6,
         oS_COM, oS_ENS, o_LED, hit);
     
     input clk, nrst;

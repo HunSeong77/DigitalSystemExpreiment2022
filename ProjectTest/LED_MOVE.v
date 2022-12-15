@@ -1,14 +1,26 @@
-module SR_FF(CLK, S, R, Q, Q_);
-	input CLK, S, R;
-	output Q, Q_;
+module LED(clk, en, O);
+	input clk, en;
+	output [7:0] O;
+	wire [3:0] cnt;
+	counter c(clk & en, cnt);
 	
-	wire t1, t2;
-	
-	assign t1 = CLK & S;
-	assign t2 = CLK & R;
-	
-	nor(Q, t1, Q_);
-	nor(Q_, t2, Q);
+	assign O[0] = O[1] & !(!cnt[3] & cnt[2] & cnt[1] & !cnt[0]) & !(cnt[3] & !cnt[2] & !cnt[1] & cnt[0]); // 6, 9
+	assign O[1] = O[2] & !(!cnt[3] & cnt[2] & !cnt[1] & cnt[0]) & !(cnt[3] & !cnt[2] & cnt[1] & !cnt[0]); // 5, 10
+	assign O[2] = O[3] & !(!cnt[3] & cnt[2] & !cnt[1] & !cnt[0]) & !(cnt[3] & !cnt[2] & cnt[1] & cnt[0]); // 4, 11
+	assign O[3] = O[4] & !(!cnt[3] & !cnt[2] & cnt[1] & cnt[0]) & !(cnt[3] & cnt[2] & !cnt[1] & !cnt[0]); // 3, 12
+	assign O[4] = O[5] & !(!cnt[3] & !cnt[2] & cnt[1] & !cnt[0]) & !(cnt[3] & cnt[2] & !cnt[1] & cnt[0]); // 7, 8
+	assign O[5] = O[6] & !(!cnt[3] & !cnt[2] & !cnt[1] & cnt[0]) & !(cnt[3] & cnt[2] & cnt[1] & !cnt[0]); // 7, 8
+	assign O[6] = !((!cnt[3] & !cnt[2] & !cnt[1] & !cnt[0]) | (cnt[3] & cnt[2] & cnt[1] & cnt[0])); // 1 ~ 14 0001 , 1110
+	assign O[7] = 1; // 0, 15 0000, 1111
+
+	// assign O[0] = O[1] & !(!cnt[3] & cnt[2] & cnt[1] & !cnt[0]) & !(cnt[3] & !cnt[2] & !cnt[1] & cnt[0]); // 6, 9
+	// assign O[1] = O[2] & !(!cnt[3] & cnt[2] & !cnt[1] & cnt[0]) & !(cnt[3] & !cnt[2] & cnt[1] & !cnt[0]); // 5, 10
+	// assign O[2] = O[3] & !(!cnt[3] & cnt[2] & !cnt[1] & !cnt[0]) & !(cnt[3] & !cnt[2] & cnt[1] & cnt[0]); // 4, 11
+	// assign O[3] = O[4] & !(!cnt[3] & !cnt[2] & cnt[1] & cnt[0]) & !(cnt[3] & cnt[2] & !cnt[1] & !cnt[0]); // 3, 12
+	// assign O[4] = O[5] & !(!cnt[3] & !cnt[2] & cnt[1] & !cnt[0]) & !(cnt[3] & cnt[2] & !cnt[1] & cnt[0]); // 7, 8
+	// assign O[5] = O[6] & !(!cnt[3] & !cnt[2] & !cnt[1] & cnt[0]) & !(cnt[3] & cnt[2] & cnt[1] & !cnt[0]); // 7, 8
+	// assign O[6] = !((!cnt[3] & !cnt[2] & !cnt[1] & !cnt[0]) | (cnt[3] & cnt[2] & cnt[1] & cnt[0])); // 1 ~ 14 0001 , 1110
+	// assign O[7] = 1; // 0, 15 0000, 1111
 endmodule
 
 module counter(CLK, Q);
@@ -23,35 +35,19 @@ module counter(CLK, Q);
 		end
 endmodule
 
-module LED(CLK, en, O);
-	input CLK, en;
-	output [7:0] O;
-	wire [3:0] cnt;
-	counter c(CLK & en, cnt);
-	
-	assign O[0] = O[1] & !(!cnt[3] & cnt[2] & cnt[1] & !cnt[0]) & !(cnt[3] & !cnt[2] & !cnt[1] & cnt[0]); // 6, 9
-	assign O[1] = O[2] & !(!cnt[3] & cnt[2] & !cnt[1] & cnt[0]) & !(cnt[3] & !cnt[2] & cnt[1] & !cnt[0]); // 5, 10
-	assign O[2] = O[3] & !(!cnt[3] & cnt[2] & !cnt[1] & !cnt[0]) & !(cnt[3] & !cnt[2] & cnt[1] & cnt[0]); // 4, 11
-	assign O[3] = O[4] & !(!cnt[3] & !cnt[2] & cnt[1] & cnt[0]) & !(cnt[3] & cnt[2] & !cnt[1] & !cnt[0]); // 3, 12
-	assign O[4] = O[5] & !(!cnt[3] & !cnt[2] & cnt[1] & !cnt[0]) & !(cnt[3] & cnt[2] & !cnt[1] & cnt[0]); // 7, 8
-	assign O[5] = O[6] & !(!cnt[3] & !cnt[2] & !cnt[1] & cnt[0]) & !(cnt[3] & cnt[2] & cnt[1] & !cnt[0]); // 7, 8
-	assign O[6] = !((!cnt[3] & !cnt[2] & !cnt[1] & !cnt[0]) | (cnt[3] & cnt[2] & cnt[1] & cnt[0])); // 1 ~ 14 0001 , 1110
-	assign O[7] = 1; // 0, 15 0000, 1111
-endmodule
-	
 
-module clk_devider(clk, nrst, clk2, clk4, clk8, clk16, clk32, clk64);
+module clk_devider(clk, nrst, clk2, clk4, clk8, clk16, clk32, clk64, clk128, clk256, clk512, clk1024);
 	input clk, nrst;
-	output clk2, clk4, clk8, clk16, clk32, clk64;
-	reg [5:0] Q;
+	output clk2, clk4, clk8, clk16, clk32, clk64, clk128, clk256, clk512, clk1024;
+	reg [9:0] Q;
 
 	initial begin
-		Q <= 6'b0;
+		Q <= 10'b0;
 	end
 
 	always @(posedge clk or negedge nrst) begin
 		if(!nrst) begin
-			Q <= 6'b0;
+			Q <= 10'b0;
 		end
 		else begin
 			Q <= Q + 1;
@@ -64,5 +60,9 @@ module clk_devider(clk, nrst, clk2, clk4, clk8, clk16, clk32, clk64);
 	assign clk16 = Q[3];
 	assign clk32 = Q[4];
 	assign clk64 = Q[5];
+	assign clk128 = Q[6];
+	assign clk256 = Q[7];
+	assign clk512 = Q[8];
+	assign clk1024 = Q[9];
 	
 endmodule

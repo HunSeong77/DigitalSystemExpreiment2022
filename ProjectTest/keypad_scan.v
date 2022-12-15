@@ -1,13 +1,13 @@
 module Keypad_Scan(
-input rst, clk,
+input nrst, clk,
 input [2:0] keypad_in,
 output reg [2:0] scan_out = 0);
 
 reg en;
 
-always @(posedge clk or negedge rst) begin
+always @(posedge clk or negedge nrst) begin
 
-if (~rst) begin		//active-low reset
+if (~nrst) begin		//active-low reset
 	en <= 0;
 	scan_out <= 0;
 end
