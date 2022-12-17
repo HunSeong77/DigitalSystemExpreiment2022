@@ -1,17 +1,80 @@
-module Piezo(clk, nrst, tank1_life, tank2_life, piezo_out);
+module Piezo(clk, nrst, tank1_life, tank2_life, shell_location, fire, piezo_out);
     input clk, nrst;
     input [1:0] tank1_life, tank2_life;
+	 input [7:0] shell_location;
+	 input fire;
     output piezo_out;
 
-    wire piezo1, piezo2;
+    wire piezo1, piezo2, piezo3;
     wire cong_en;
 
     assign cong_en = (!tank1_life[1] & !tank1_life[0]) | (!tank2_life[0] & !tank2_life[1]);
-    assign piezo_out = piezo1 | piezo2;
+    assign piezo_out = piezo1 | piezo2 | piezo3;
 
     hit_feedback hitFeedback(clk, nrst, tank1_life, tank2_life, piezo1);
     congratulation cong(clk, nrst, cong_en, piezo2);
+	 fire_feedback fireFeedback(clk, nrst, shell_location, fire, piezo3);
 endmodule
+
+module fire_feedback(clk, nrst, shell_location, fire, piezo_out);
+	input clk, nrst, fire;
+	input [7:0] shell_location;
+	output piezo_out;
+	
+	integer timePass, cnt, limit;
+	reg buff, en;
+	reg [7:0] reg_shell_loc;
+
+	assign piezo_out = buff;
+	
+	initial begin
+			timePass = 0;
+			cnt = 0;
+			limit = 1000;
+			reg_shell_loc = 8'b00100000;
+			buff = 1'b0;
+			en = 1'b0;
+		end
+   
+	always@(posedge clk or negedge nrst) begin
+		if(!nrst) begin
+			timePass = 0;
+			cnt = 0;
+			limit = 1000;
+			reg_shell_loc = 8'b00100000;
+			buff = 1'b0;
+			en = 1'b0;
+			end
+		else begin
+			if(fire) begin
+				if(shell_location != reg_shell_loc) begin
+				reg_shell_loc = shell_location;
+				en = 1'b1;
+				end
+			end
+			if(en) begin
+				timePass = timePass + 1;
+				cnt = cnt + 1;
+				if(cnt > limit) begin
+					cnt = 0;
+					buff = !buff;
+				end
+				if(timePass > 100000) begin
+					cnt = 0;
+					timePass = 0;
+					en = 1'b0;
+					buff = 1'b0;
+				end
+			end
+			else begin
+				cnt = 0;
+				timePass = 0;
+				en = 1'b0;
+				buff = 1'b0;
+			end
+		end
+	end
+endmodule		
 
 module hit_feedback(clk, nrst, tank1_life, tank2_life, piezo_out);
     input clk, nrst;
@@ -88,33 +151,35 @@ module congratulation(clk, nrst, en, piezo_out);
     initial begin
         buff <= 1'b0;
         cnt <= 0;
-        beat <= 21845; // 1/8 second, 1/16 beat
-        i <= 0;
+        beat <= 65535; // 1/8 second, 1/16 beat
+        i <= 129;
         cn_sound = 0;
-        limit = 21845;
-        LB <= 2123;
-        D <= 1785;
-        DS <= 1685;
-        E <= 1591;
-        G <= 1338;
-        A <= 1192;
-        B <= 1062;
+        limit = 65535;
+            LB <= 4246;
+				D <= 3570;
+				DS <= 3370;
+				E <= 3182;
+				G <= 2676;
+				A <= 2384;
+				B <= 2124;
+
     end
 
     always@(posedge clk or negedge nrst) begin
         if(!nrst) begin
             buff = 1'b0;
             cnt = 0;
-            beat = 21845; // 1/16 beat, 3 beat / sec
-            i = 0;
+            beat = 65535; // 1/16 beat, 3 beat / sec
+            i = 129;
             cn_sound = 0;
-            LB <= 2123;
-            D <= 1785;
-            DS <= 1685;
-            E <= 1591;
-            G <= 1338;
-            A <= 1192;
-            B <= 1062;
+            LB <= 4246;
+				D <= 3570;
+				DS <= 3370;
+				E <= 3182;
+				G <= 2676;
+				A <= 2384;
+				B <= 2124;
+
         end
         else if (en) begin
             if(cnt >= beat) begin
@@ -123,7 +188,7 @@ module congratulation(clk, nrst, en, piezo_out);
                 i = i + 1;
             end
             if(i >= 577) begin
-                i = 1; // infinite loop
+                i = 129; // infinite loop
             end
             if(cn_sound >= limit) begin
                 cn_sound = 0;
@@ -138,16 +203,17 @@ module congratulation(clk, nrst, en, piezo_out);
         else begin
             buff = 1'b0;
             cnt = 0;
-            beat = 21845; // 1/16 beat
-            i = 0;
+            beat = 65535; // 1/16 beat
+            i = 129;
             cn_sound = 0;
-            LB <= 2123;
-            D <= 1785;
-            DS <= 1685;
-            E <= 1591;
-            G <= 1338;
-            A <= 1192;
-            B <= 1062;
+            LB <= 4246;
+				D <= 3570;
+				DS <= 3370;
+				E <= 3182;
+				G <= 2676;
+				A <= 2384;
+				B <= 2124;
+
         end
     end
 
@@ -565,10 +631,10 @@ module congratulation(clk, nrst, en, piezo_out);
         327 : limit = D;
         328 : limit = D;
         
-        329 : limit = B;
-        330 : limit = B;
-        331 : limit = B;
-        332 : limit = B;
+        329 : limit = LB;
+        330 : limit = LB;
+        331 : limit = LB;
+        332 : limit = LB;
         
         333 : limit = G;
         334 : limit = G;
@@ -845,10 +911,10 @@ module congratulation(clk, nrst, en, piezo_out);
         551 : limit = D;
         552 : limit = D;
         
-        553 : limit = B;
-        554 : limit = B;
-        555 : limit = B;
-        556 : limit = B;
+        553 : limit = LB;
+        554 : limit = LB;
+        555 : limit = LB;
+        556 : limit = LB;
         
         557 : limit = G;
         558 : limit = G;

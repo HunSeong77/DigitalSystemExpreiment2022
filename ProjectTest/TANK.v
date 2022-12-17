@@ -1,16 +1,16 @@
 module TANK(clk, nrst, key_4, key_5, key_6, power,
-        fire, tank1_life, tank2_life, SEG0, SEG1, SEG2, SEG3, SEG4, SEG5, SEG6, SEG7);
+        fire, tank1_life, tank2_life, SHELL, SEG0, SEG1, SEG2, SEG3, SEG4, SEG5, SEG6, SEG7);
     input clk, nrst, key_4, key_5, key_6;
     input [7:0] power;
     output fire;
     output [1:0] tank1_life, tank2_life;
     output [7:0] SEG0, SEG1, SEG2, SEG3, SEG4, SEG5, SEG6, SEG7;
+    output [7:0] SHELL;
 
     wire hit, turn;
     wire [3:0] tank1_location, tank2_location;
     wire [1:0] dist;
 
-    wire [7:0] SHELL;
     wire [7:0] TANK [7:0];
 
     assign SEG0 = { TANK[0][7:2], TANK[0][1] ^ SHELL[0], TANK[0][0] };
